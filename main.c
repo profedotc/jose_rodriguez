@@ -23,32 +23,47 @@ void gol_print(bool w[]);
 void gol_step(bool w1[], bool w2[]);
 int gol_count_neighbors(bool w1[], int i, int j);
 bool gol_get_cell(bool w1[], int i, int j);
-void gol_copy(bool w1[], bool w2[]);
+
 
 /* MAIN */
 int main()
 {
 	int i = 0;
-	// Declara dos mundos
-	bool world_a[TAM_X][TAM_Y];
-	bool world_b[TAM_X][TAM_Y];
+
+
+	/* Vector de matrices (array tridimensional)
+	 *                     ___________
+	 *                    |___|___|___|
+	 *   ___   pointers   |___|___|___|
+	 *  |_0_| ----------->|_0_|___|___|
+         *  |_1_| -----------> ___________
+         *                    |_0_|___|___|
+	 *                    |___|___|___|
+	 *                    |___|___|___|
+	 *
+         * La idea es intercambiar los mundos entre sí, de tal manera que uno lo usamos como auxiliar
+	 * y el otro almacena el mundo real
+	 */
+
+	bool worlds[2][TAM_X][TAM_Y];
+	bool *current = &worlds[0][0][0];
+	bool *next = &worlds[1][0][0];
 
 	// inicializa el mundo
-    // gol_init(world_a);
-    // gol_init(&world_a);
-    // gol_init(&world_a[0]);
-    // El compilador se queja:  "warning: passing argument 1 of 'gol_print' from incompatible pointer type [-Wincompatible-pointer-types]
-    //                          "note: expected '_Bool *' but argument is of type '_Bool (*)[8]'
-    // La función espera una dirección de memoria y le estamos pasando una array. ¿Pero el nombre de un array no es una dirección?
-	gol_init(&world_a[0][0]);
+	gol_init(current);
 
 	do {
 		printf("\033cIteration %d\n", i++);
 		// Imprime el mundo
-		gol_print(&world_a[0][0]);
+		gol_print(current);
 
 		// Itera
-		gol_step(&world_a[0][0], &world_b[0][0]);
+		gol_step(current, next);
+
+		// Intercambiamos mundos
+		current = next;
+		next = &worlds[i+1%2][0][0];
+
 	} while (getchar() != 'q');
 
 	return EXIT_SUCCESS;
@@ -129,7 +144,6 @@ void gol_step(bool w1[], bool w2[])
 	 * - No se puede cambiar el estado del mundo a la vez que se recorre:
 	 *   Usar un mundo auxiliar para guardar el siguiente estado.
 	 *
-	 * - Copiar el mundo auxiliar sobre el mundo principal
 	 */
 
 	 int alives = 0;
@@ -151,8 +165,6 @@ void gol_step(bool w1[], bool w2[])
 
         alives = 0;
 	 }
-
-	 gol_copy(w1, w2);
 }
 
 int gol_count_neighbors(bool w[], int i, int j)
@@ -185,17 +197,4 @@ bool gol_get_cell(bool w[], int i, int j)
         return 0;
 
      return *(w + j + i*TAM_Y);
-}
-
-void gol_copy(bool orig[], bool aux[])
-{
-	// copia el mundo segundo mundo sobre el primero
-
-	for (int i =0; i < TAM_X; i++)  {
-
-        for(int j=0; j < TAM_Y; j++) {
-
-            *(orig + j + i*TAM_Y) = *(aux + j + i*TAM_Y);
-        }
-	}
 }
