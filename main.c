@@ -45,9 +45,11 @@ int main()
 	 * y el otro almacena el mundo real
 	 */
 
-	bool worlds[2][TAM_X][TAM_Y];
-	bool *current = &worlds[0][0][0];
-	bool *next = &worlds[1][0][0];
+	bool world_a[TAM_X][TAM_Y];
+	bool world_b[TAM_X][TAM_Y];
+	bool *current = &world_a[0][0];
+	bool *next = &world_b[0][0];
+	bool *tmp_world_p;
 
 	// inicializa el mundo
 	gol_init(current);
@@ -61,8 +63,9 @@ int main()
 		gol_step(current, next);
 
 		// Intercambiamos mundos
+		tmp_world_p = current;
 		current = next;
-		next = &worlds[i+1%2][0][0];
+		next = tmp_world_p;
 
 	} while (getchar() != 'q');
 
