@@ -1,0 +1,3 @@
+# Ignorar los productos de la compilación: módulos objetos y binarios
+*.o
+gol
