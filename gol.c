@@ -1,132 +1,127 @@
 #include <stdio.h>
 #include "gol.h"
 
-void gol_init(bool world[])
+void gol_init(struct gol *self)
 {
-	// Poner el mundo a false
-	/*
-	 * Array: Reserva de memoria CONTINUA de forma estática
-	 *
-	 * Existen diferentes forma de recorrer un array.
-	 * En las líneas de abajo se usa la ARITMÉTICA DE PUNTEROS
-	 * Inicializamos un puntero con la dirección del primer elemento del array y iteramos sobre el
-	 * hasta recorrer todo el array de TAM_X * TAM_Y elementos
-	 */
+    // Poner el mundo a false
 
-	for (bool * ini = world; ini < world + TAM_X*TAM_Y; ini++)
+    for (bool *ini = self->world_a[0]; ini < self->world_a[0] + TAM_X*TAM_Y; ini++)
 
         *ini = false;
 
-	/* Inicializar con el patrón del glider:
-	 *           . # .
-	 *           . . #
-	 *           # # #
-	 */
+    /* Inicializar con el patrón del glider:
+    *           . # .
+    *           . . #
+    *           # # #
+    */
 
-	 /*
-      * Nomenclatura world[i][j]. No funciona. El compilador no sabe donde en acaba el array
-      * porque le falta el dato del tamaño
-      * ERROR: subscripted value is neither array nor pointer nor vector
-      *
-      * Si este método recibiera como parámetro: bool world[][TAM_Y], sí valdría. El tamaño de
-      * la fila lo deduce del tipo bool.
-      */
+    *(self->world_a[0] + 1 + 0*TAM_Y) = true;
+    *(self->world_a[0] + 2 + 1*TAM_Y) = true;
+    *(self->world_a[0] + 0 + 2*TAM_Y) = true;
+    *(self->world_a[0] + 1 + 2*TAM_Y) = true;
+    *(self->world_a[0] + 2 + 2*TAM_Y) = true;
 
-	 *(world + 1 + 0*TAM_Y) = true;
-	 *(world + 2 + 1*TAM_Y) = true;
-	 *(world + 0 + 2*TAM_Y) = true;
-	 *(world + 1 + 2*TAM_Y) = true;
-	 *(world + 2 + 2*TAM_Y) = true;
+    self->current = self->world_a[0];
+    self->next = self->world_b[0];
 }
 
-void gol_print(bool w[])
+void gol_print(struct gol *self)
 {
-	// Imprimir el mundo por consola. Sugerencia:
-	/*
-	 *     . # . . . . . . . .
-	 *     . . # . . . . . . .
-	 *     # # # . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 *     . . . . . . . . . .
-	 */
+    // Imprimir el mundo por consola. Sugerencia:
+    /*
+    *     . # . . . . . . . .
+    *     . . # . . . . . . .
+    *     # # # . . . . . . .
+    *     . . . . . . . . . .
+    *     . . . . . . . . . .
+    *     . . . . . . . . . .
+    *     . . . . . . . . . .
+    *     . . . . . . . . . .
+    *     . . . . . . . . . .
+    *     . . . . . . . . . .
+    */
 
-    for (int i = 0; i < TAM_X; i++) {
+    for (int i = 0; i < TAM_X; i++)
+    {
 
-        for (int j = 0; j < TAM_Y; j++) {
+        for (int j = 0; j < TAM_Y; j++)
+        {
 
-            printf(" %c", *(w + j + i*TAM_Y) ? '#' : '.');
+            printf(" %c", *(self->current + j + i*TAM_Y) ? '#' : '.');
         }
 
         printf("\n");
     }
 }
 
-void gol_step(bool w1[], bool w2[])
+void gol_step(struct gol *self)
 {
-	/*
-	 *
-	 * - Recorrer el mundo célula por célula comprobando si nace, sobrevive
-	 *   o muere.
-	 *
-	 * - No se puede cambiar el estado del mundo a la vez que se recorre:
-	 *   Usar un mundo auxiliar para guardar el siguiente estado.
-	 *
-	 */
+    /*
+    *
+    * - Recorrer el mundo célula por célula comprobando si nace, sobrevive
+    *   o muere.
+    *
+    * - No se puede cambiar el estado del mundo a la vez que se recorre:
+    *   Usar un mundo auxiliar para guardar el siguiente estado.
+    *
+    */
 
-	 int alives = 0;
+    int alives = 0;
 
-	 for (int i = 0; i < TAM_X; i++) {
+    for (int i = 0; i < TAM_X; i++)
+    {
 
-        for (int j = 0; j < TAM_Y; j++) {
+        for (int j = 0; j < TAM_Y; j++)
+        {
 
-            alives = gol_count_neighbors(w1, i, j);
+            alives = gol_count_neighbors(self, i, j);
 
-            if(gol_get_cell(w1, i, j))
+            if(gol_get_cell(self, i, j))
 
-                *(w2 + j + i*TAM_Y) = alives == 2 || alives == 3;
+                *(self->next + j + i*TAM_Y) = alives == 2 || alives == 3;
 
             else
 
-                *(w2 + j + i*TAM_Y) = alives == 3;
+                *(self->next + j + i*TAM_Y) = alives == 3;
         }
 
         alives = 0;
-	 }
+    }
+
+    // Intercambiamos mundos
+    bool *tmp_world_p = self->current;
+    self->current = self->next;
+    self->next = tmp_world_p;
 }
 
-int gol_count_neighbors(bool w[], int i, int j)
+int gol_count_neighbors(struct gol *self, int i, int j)
 {
-	// Devuelve el número de vecinos
-	int counter = 0;
+    // Devuelve el número de vecinos
+    int counter = 0;
 
-	counter += gol_get_cell(w, i-1, j-1);
-	counter += gol_get_cell(w, i-1, j);
-	counter += gol_get_cell(w, i-1, j+1);
-	counter += gol_get_cell(w, i, j-1);
-	counter += gol_get_cell(w, i, j+1);
-	counter += gol_get_cell(w, i+1, j-1);
-	counter += gol_get_cell(w, i+1, j);
-	counter += gol_get_cell(w, i+1, j+1);
+    counter += gol_get_cell(self, i-1, j-1);
+    counter += gol_get_cell(self, i-1, j);
+    counter += gol_get_cell(self, i-1, j+1);
+    counter += gol_get_cell(self, i, j-1);
+    counter += gol_get_cell(self, i, j+1);
+    counter += gol_get_cell(self, i+1, j-1);
+    counter += gol_get_cell(self, i+1, j);
+    counter += gol_get_cell(self, i+1, j+1);
 
-	return counter;
+    return counter;
 
 }
 
-bool gol_get_cell(bool w[], int i, int j)
+bool gol_get_cell(struct gol *self, int i, int j)
 {
-	/*
-	 * Devuelve el estado de la célula de posición indicada
-	 * (¡cuidado con los límites del array!)
-	 */
+    /*
+    * Devuelve el estado de la célula de posición indicada
+    * (¡cuidado con los límites del array!)
+    */
 
-	 if ( i < 0 || i >= TAM_X || j < 0 || j >= TAM_Y)
+    if ( i < 0 || i >= TAM_X || j < 0 || j >= TAM_Y)
 
         return 0;
 
-     return *(w + j + i*TAM_Y);
+    return *(self->current + j + i*TAM_Y);
 }

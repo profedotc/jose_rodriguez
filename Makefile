@@ -1,15 +1,24 @@
 .PHONY: all clean test install
 
-all: gol
+
+CC = gcc
+CFGLAS = -Wall
+
+all: release
+
+release: gol
+
+debug: CFLAGS += -g
+debug: gol
 
 gol: main.o gol.o
-	gcc main.o gol.o -o gol
+	$(CC) $(CFLAGS) main.o gol.o -o gol
 
 main.o: main.c gol.h
-	gcc -c main.c
+	$(CC) $(CFLAGS) -c main.c
 
 gol.o: gol.c
-	gcc -c gol.c
+	$(CC) $(CFLAGS) -c gol.c
 
 clean: 
 	rm -f *.o gol

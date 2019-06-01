@@ -4,31 +4,30 @@
 
 int main()
 {
-	int i = 0;
+    int i = 0;
 
-	bool world_a[TAM_X][TAM_Y];
-	bool world_b[TAM_X][TAM_Y];
-	bool *current = &world_a[0][0];
-	bool *next = &world_b[0][0];
-	bool *tmp_world_p;
+    // Reserva estática de memoria: el compilador reserva espacio en la memoria
+    // en la declaración del tipo struct gol. Conoce el espacio porque conoce
+    // la definición de la estructura (el tipo) por la cabecera.
+    struct gol g;
 
-	// inicializa el mundo
-	gol_init(current);
+    // inicializa el mundo
+    gol_init(&g);
 
-	do {
-		printf("\033cIteration %d\n", i++);
-		// Imprime el mundo
-		gol_print(current);
+    do
+    {
+        printf("\033cIteration %d\n", i++);
+        // Imprime el mundo
+        gol_print(&g);
 
-		// Itera
-		gol_step(current, next);
+        // Itera
+        // Paso por referencia: las estructuras pueden copiarse por valor, pero
+        // se usa el paso por referencia porque si la estructura contiene muchos
+        // campos, la copia desperdicia memoria.
+        gol_step(&g);
 
-		// Intercambiamos mundos
-        tmp_world_p = current;
-        current = next;
-        next = tmp_world_p;
+    }
+    while (getchar() != 'q');
 
-	} while (getchar() != 'q');
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
