@@ -1,6 +1,16 @@
 #include <stdio.h>
 #include "gol.h"
 
+/*
+ * Al eliminar de la cabecera "gol.h" estas funciones y declararla como "static" en el fichero "gol.c"
+ * consigo invisibilizar para el desarrollador que usa mi librería "gol" estas funciones. Oculto estas 
+ * funciones para el usuario de mi librería, o desde una perspectiva de objeto, privatizo estos métodos
+ * El linker no es capaz de encontrar referencia a ellas si son llamadas en main.c o cualquier otra parte
+ * del código que no sea en este fichero
+ */
+static int  count_neighbors(struct gol *self, int i, int j);  // Cuenta el numero de vecinas vivas de una celda
+static bool get_cell(struct gol *self, int i, int j); // Obtiene el estado de la celda
+
 void gol_init(struct gol *self)
 {
     // Poner el mundo a false
@@ -74,9 +84,9 @@ void gol_step(struct gol *self)
         for (int j = 0; j < TAM_Y; j++)
         {
 
-            alives = gol_count_neighbors(self, i, j);
+            alives = count_neighbors(self, i, j);
 
-            if(gol_get_cell(self, i, j))
+            if(get_cell(self, i, j))
 
                 *(self->next + j + i*TAM_Y) = alives == 2 || alives == 3;
 
@@ -94,25 +104,25 @@ void gol_step(struct gol *self)
     self->next = tmp_world_p;
 }
 
-int gol_count_neighbors(struct gol *self, int i, int j)
+int count_neighbors(struct gol *self, int i, int j)
 {
     // Devuelve el número de vecinos
     int counter = 0;
 
-    counter += gol_get_cell(self, i-1, j-1);
-    counter += gol_get_cell(self, i-1, j);
-    counter += gol_get_cell(self, i-1, j+1);
-    counter += gol_get_cell(self, i, j-1);
-    counter += gol_get_cell(self, i, j+1);
-    counter += gol_get_cell(self, i+1, j-1);
-    counter += gol_get_cell(self, i+1, j);
-    counter += gol_get_cell(self, i+1, j+1);
+    counter += get_cell(self, i-1, j-1);
+    counter += get_cell(self, i-1, j);
+    counter += get_cell(self, i-1, j+1);
+    counter += get_cell(self, i, j-1);
+    counter += get_cell(self, i, j+1);
+    counter += get_cell(self, i+1, j-1);
+    counter += get_cell(self, i+1, j);
+    counter += get_cell(self, i+1, j+1);
 
     return counter;
 
 }
 
-bool gol_get_cell(struct gol *self, int i, int j)
+bool get_cell(struct gol *self, int i, int j)
 {
     /*
     * Devuelve el estado de la célula de posición indicada
