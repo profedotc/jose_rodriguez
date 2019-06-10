@@ -2,14 +2,14 @@
 #include "gol.h"
 
 /*
- * Al eliminar de la cabecera "gol.h" estas funciones y declararla como "static" en el fichero "gol.c"
+ * Al eliminar de la cabecera "gol.h" estas funciones y declararlas como "static" en el fichero "gol.c"
  * consigo invisibilizar para el desarrollador que usa mi librería "gol" estas funciones. Oculto estas 
  * funciones para el usuario de mi librería, o desde una perspectiva de objeto, privatizo estos métodos
  * El linker no es capaz de encontrar referencia a ellas si son llamadas en main.c o cualquier otra parte
  * del código que no sea en este fichero
  */
-static int  count_neighbors(struct gol *self, int i, int j);  // Cuenta el numero de vecinas vivas de una celda
-static bool get_cell(struct gol *self, int i, int j); // Obtiene el estado de la celda
+static int  count_neighbors(const struct gol *self, int i, int j);  // Cuenta el numero de vecinas vivas de una celda
+static bool get_cell(const struct gol *self, int i, int j); // Obtiene el estado de la celda
 
 void gol_init(struct gol *self)
 {
@@ -35,7 +35,7 @@ void gol_init(struct gol *self)
     self->next = self->world_b[0];
 }
 
-void gol_print(struct gol *self)
+void gol_print(const struct gol *self)
 {
     // Imprimir el mundo por consola. Sugerencia:
     /*
@@ -104,7 +104,7 @@ void gol_step(struct gol *self)
     self->next = tmp_world_p;
 }
 
-int count_neighbors(struct gol *self, int i, int j)
+static int count_neighbors(const struct gol *self, int i, int j)
 {
     // Devuelve el número de vecinos
     int counter = 0;
@@ -122,7 +122,7 @@ int count_neighbors(struct gol *self, int i, int j)
 
 }
 
-bool get_cell(struct gol *self, int i, int j)
+static bool get_cell(const struct gol *self, int i, int j)
 {
     /*
     * Devuelve el estado de la célula de posición indicada

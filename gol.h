@@ -15,7 +15,7 @@ struct gol
 };
 
 void gol_init(struct gol *self);    // Inicializa el mundo
-void gol_print(struct gol *self);   // Imprime el mundo
+void gol_print(const struct gol *self);   // Imprime el mundo
 void gol_step(struct gol *self);    // Itera el siguiente paso
 
 #endif
