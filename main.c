@@ -10,7 +10,7 @@ int main()
 
     if(!gol_alloc(&g, TAM_X, TAM_Y)) {
 
-        fprintf(stderr, "Error: no se ha podido reservar memoria\n");
+        fprintf(stderr, "ERROR: Could not allocate memory\n");
         exit(EXIT_FAILURE);
     }
 
@@ -19,7 +19,6 @@ int main()
     do
     {
         printf("\033cIteration %d\n", i++);
-
         gol_print(&g);
         gol_step(&g);
 

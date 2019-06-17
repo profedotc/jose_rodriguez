@@ -5,23 +5,18 @@
 enum world_type {CURRENT_WORLD, NEXT_WORLD};
 
 static int  count_neighbors(struct gol *self, int i, int j);  // Cuenta el numero de vecinas vivas de una celda
-static bool get_cell(struct gol *self, int i, int j); // Obtiene el estado de la celda
+static bool get_cell(const struct gol *self, enum world_type wtype, int i, int j);
+static void set_cell(struct gol *self, enum world_type wtype, int i, int j, bool value);
+static void fix_coords(const struct gol *self, int *i, int *j);
 
 bool gol_alloc(struct gol *self, int size_x, int size_y) {
 
-    for(int world = CURRENT_WORLD; world <= NEXT_WORLD; world++) {
+    for (int world = CURRENT_WORLD; world <= NEXT_WORLD; world++) {
 
-        self->worlds[world] = malloc(size_x * sizeof(bool *)); // Reserva dinámica de vector de punteros a fila (bool *)
+        self->worlds[world] = (bool *)malloc(size_x * size_y * sizeof(bool)); // Reserva dinámica de vector de punteros a fila (bool *)
 
         if (!self->worlds[world]) {
             return false;
-        }
-
-        for (int row = 0; row < size_x; row++) {
-            self->worlds[world][row] = malloc(size_y * sizeof(bool)); // Reserva dinámica de cada fila
-
-        if (!self->worlds[world][row])
-                return false;
         }
     }
 
@@ -33,11 +28,8 @@ bool gol_alloc(struct gol *self, int size_x, int size_y) {
 
 void gol_free(struct gol *self) {
 
-    for (int world = CURRENT_WORLD; world <= NEXT_WORLD; world++) {
-        for (int row=0; row < self->size_x; row++)
-            free(self->worlds[world][row]);
+    for (int world = CURRENT_WORLD; world <= NEXT_WORLD; world++)
         free(self->worlds[world]);
-    }
 }
 
 void gol_init(struct gol *self)
@@ -45,7 +37,7 @@ void gol_init(struct gol *self)
 
     for (int i = 0; i < self->size_x; i++)
         for (int j = 0; j < self->size_y; j++)
-            self->worlds[CURRENT_WORLD][i][j] = false;
+            set_cell(self, CURRENT_WORLD, i, j, false);
 
     /* Inicializar con el patrón del glider:
     *           . # .
@@ -53,11 +45,11 @@ void gol_init(struct gol *self)
     *           # # #
     */
 
-    self->worlds[CURRENT_WORLD][0][1] = true;
-    self->worlds[CURRENT_WORLD][1][2] = true;
-    self->worlds[CURRENT_WORLD][2][0] = true;
-    self->worlds[CURRENT_WORLD][2][1] = true;
-    self->worlds[CURRENT_WORLD][2][2] = true;
+    set_cell(self, CURRENT_WORLD, 0, 1, true);
+    set_cell(self, CURRENT_WORLD, 1, 2, true);
+    set_cell(self, CURRENT_WORLD, 2, 0, true);
+    set_cell(self, CURRENT_WORLD, 2, 1, true);
+    set_cell(self, CURRENT_WORLD, 2, 2, true);
 }
 
 void gol_print(struct gol *self)
@@ -82,7 +74,7 @@ void gol_print(struct gol *self)
         for (int j = 0; j < TAM_Y; j++)
         {
 
-            printf(" %c", self->worlds[CURRENT_WORLD][i][j] ? '#' : '.');
+            printf(" %c", get_cell(self, CURRENT_WORLD, i, j) ? '#' : '.');
         }
 
         printf("\n");
@@ -111,20 +103,21 @@ void gol_step(struct gol *self)
 
             alives = count_neighbors(self, i, j);
 
-            if(get_cell(self, i, j))
+            if (get_cell(self, CURRENT_WORLD, i, j)) {
 
-                self->worlds[NEXT_WORLD][i][j] = alives == 2 || alives == 3;
+                set_cell(self, NEXT_WORLD, i, j, alives == 2 || alives == 3);
 
-            else
+	    } else {
 
-                self->worlds[NEXT_WORLD][i][j] = alives == 3;
+                set_cell(self, NEXT_WORLD, i, j, alives == 3);
+	    }
         }
 
         alives = 0;
     }
 
     // Intercambiamos mundos
-    bool **swap = self->worlds[CURRENT_WORLD];
+    bool *swap = self->worlds[CURRENT_WORLD];
     self->worlds[CURRENT_WORLD] = self->worlds[NEXT_WORLD];
     self->worlds[NEXT_WORLD] = swap;
 }
@@ -134,30 +127,47 @@ int count_neighbors(struct gol *self, int i, int j)
     // Devuelve el número de vecinos
     int counter = 0;
 
-    counter += get_cell(self, i-1, j-1);
-    counter += get_cell(self, i-1, j);
-    counter += get_cell(self, i-1, j+1);
-    counter += get_cell(self, i, j-1);
-    counter += get_cell(self, i, j+1);
-    counter += get_cell(self, i+1, j-1);
-    counter += get_cell(self, i+1, j);
-    counter += get_cell(self, i+1, j+1);
+    counter += get_cell(self, CURRENT_WORLD, i-1, j-1);
+    counter += get_cell(self, CURRENT_WORLD, i-1, j);
+    counter += get_cell(self, CURRENT_WORLD, i-1, j+1);
+    counter += get_cell(self, CURRENT_WORLD, i, j-1);
+    counter += get_cell(self, CURRENT_WORLD, i, j+1);
+    counter += get_cell(self, CURRENT_WORLD, i+1, j-1);
+    counter += get_cell(self, CURRENT_WORLD, i+1, j);
+    counter += get_cell(self, CURRENT_WORLD, i+1, j+1);
 
     return counter;
-
 }
 
-bool get_cell(struct gol *self, int i, int j)
+static void fix_coords(const struct gol *self, int *i, int *j) {
+
+    if (*i >= self->size_x)
+	*i = 0;
+    else if (*i < 0)
+	*i = self->size_x - 1;
+
+    if (*j >= self->size_y)
+	*j = 0;
+    else if (*j < 0)
+	*j = self->size_y - 1;
+}
+
+static bool get_cell(const struct gol *self, enum world_type wtype, int i, int j)
 {
     /*
     * Devuelve el estado de la célula de posición indicada
     * (¡cuidado con los límites del array!)
     */
 
-
-    if ( i < 0 || i >= TAM_X || j < 0 || j >= TAM_Y)
-        return 0;
-
-    return self->worlds[CURRENT_WORLD][i][j];
+    fix_coords(self, &i, &j);
+    //return *(self->worlds[wtype] + j + i * self->size_y);
+    return self->worlds[wtype][j + i * self->size_y];
 }
 
+static void set_cell(struct gol *self, enum world_type wtype, int i, int j, bool value)
+{
+
+    fix_coords(self, &i, &j);
+    //*(self->worlds[wtype] + j + i * self->size_y) = value;
+    self->worlds[wtype][j + i * self->size_y] = value;
+}
