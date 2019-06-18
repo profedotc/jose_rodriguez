@@ -1,4 +1,4 @@
-.PHONY: all clean test install 
+.PHONY: all test clean test install 
 
 
 CC = gcc
