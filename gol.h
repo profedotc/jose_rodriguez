@@ -6,6 +6,7 @@
 #define TAM_X 8
 #define TAM_Y 8
 #define NUM_WORLDS 2
+#define ITERATIONS 500
 
 struct gol {
 	int size_x;
