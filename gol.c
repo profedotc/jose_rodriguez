@@ -37,25 +37,23 @@ static void fix_coords(const struct gol *self, int *i, int *j);
 
 bool gol_alloc(struct gol *self, int size_x, int size_y) {
 
-    for (int world = CURRENT_WORLD; world <= NEXT_WORLD; world++) {
+    self->mem = (bool *)malloc(NUM_WORLDS * size_x * size_y * sizeof(bool)); // Reserva dinámica de bloque de memoria por mundo
 
-        self->worlds[world] = (bool *)malloc(size_x * size_y * sizeof(bool)); // Reserva dinámica de bloque de memoria por mundo
-
-        if (!self->worlds[world]) {
-            return false;
-        }
+    if (!self->mem) {
+        return false;
     }
 
     self->size_x = size_x;
     self->size_y = size_y;
+    self->worlds[CURRENT_WORLD] = self->mem;
+    self->worlds[NEXT_WORLD] = self->mem + size_x * size_y;
 
     return true;
 }
 
 void gol_free(struct gol *self) {
 
-    for (int world = CURRENT_WORLD; world <= NEXT_WORLD; world++)
-        free(self->worlds[world]);
+    free(self->mem);
 }
 
 void gol_init(struct gol *self)
@@ -148,7 +146,7 @@ void gol_step(struct gol *self)
     self->worlds[NEXT_WORLD] = swap;
 }
 
-int count_neighbors(struct gol *self, int i, int j)
+static int count_neighbors(struct gol *self, int i, int j)
 {
     // Devuelve el número de vecinos
     int counter = 0;

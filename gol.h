@@ -9,6 +9,7 @@
 struct gol {
 	int size_x;
 	int size_y;
+	bool *mem;
 	bool *worlds[NUM_WORLDS];
 };
 
