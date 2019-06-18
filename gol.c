@@ -35,12 +35,17 @@ static bool get_cell(const struct gol *self, enum world_type wtype, int i, int j
 static void set_cell(struct gol *self, enum world_type wtype, int i, int j, bool value);
 static void fix_coords(const struct gol *self, int *i, int *j);
 
-bool gol_alloc(struct gol *self, int size_x, int size_y) {
+struct gol * gol_alloc(int size_x, int size_y) {
+
+    struct gol *self = (struct gol *)malloc(sizeof(struct gol));
+    if (!self)
+	return NULL;
 
     self->mem = (bool *)malloc(NUM_WORLDS * size_x * size_y * sizeof(bool)); // Reserva dinámica de bloque de memoria por mundo
 
     if (!self->mem) {
-        return false;
+        free(self);
+        return NULL;
     }
 
     self->size_x = size_x;
@@ -48,12 +53,13 @@ bool gol_alloc(struct gol *self, int size_x, int size_y) {
     self->worlds[CURRENT_WORLD] = self->mem;
     self->worlds[NEXT_WORLD] = self->mem + size_x * size_y;
 
-    return true;
+    return self;
 }
 
 void gol_free(struct gol *self) {
 
     free(self->mem);
+    free(self);
 }
 
 void gol_init(struct gol *self)
