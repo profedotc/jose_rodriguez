@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-#define TAM_X 8
-#define TAM_Y 16
 #define NUM_WORLDS 2
 #define ITERATIONS 500
 
