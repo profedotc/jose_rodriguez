@@ -4,6 +4,32 @@
 
 enum world_type {CURRENT_WORLD, NEXT_WORLD};
 
+/*
+ * Macro funcional para acceder a las celdas
+ * Se define aquí porque no queremos que el usuario de mi librería disponga de ella
+ * Sólo de uso en este fichero, gol.c
+ * Los paréntesis es para evitar un funcionamiento erróneo de la macro. Supongamos 
+ * el siguiente ejemplo:
+ *
+ * #define CELL(self, wtype, i, j)
+ *
+ * CELL(self, wtype, j, i + 2)
+ *
+ * Esa macro se sustituiría por este código:
+ *
+ * self->worlds[wtype][j + i + 2 * self->size_y]
+ *
+ * es decir (orden de precedencia de operadores),
+ *
+ * self->worlds[wtype][j + i + (2 * self->size_y)]
+ *
+ * lo que desemboca en un error porque no es la posición de memoria
+ * a la que queremos acceder
+ *
+ */
+
+#define CELL(self, wtype, i, j)	((self)->worlds[(wtype)][(j) + (i) * self->size_y])
+
 static int  count_neighbors(struct gol *self, int i, int j);  // Cuenta el numero de vecinas vivas de una celda
 static bool get_cell(const struct gol *self, enum world_type wtype, int i, int j);
 static void set_cell(struct gol *self, enum world_type wtype, int i, int j, bool value);
@@ -13,7 +39,7 @@ bool gol_alloc(struct gol *self, int size_x, int size_y) {
 
     for (int world = CURRENT_WORLD; world <= NEXT_WORLD; world++) {
 
-        self->worlds[world] = (bool *)malloc(size_x * size_y * sizeof(bool)); // Reserva dinámica de vector de punteros a fila (bool *)
+        self->worlds[world] = (bool *)malloc(size_x * size_y * sizeof(bool)); // Reserva dinámica de bloque de memoria por mundo
 
         if (!self->worlds[world]) {
             return false;
@@ -68,10 +94,10 @@ void gol_print(struct gol *self)
     *     . . . . . . . . . .
     */
 
-    for (int i = 0; i < TAM_X; i++)
+    for (int i = 0; i < self->size_x; i++)
     {
 
-        for (int j = 0; j < TAM_Y; j++)
+        for (int j = 0; j < self->size_y; j++)
         {
 
             printf(" %c", get_cell(self, CURRENT_WORLD, i, j) ? '#' : '.');
@@ -160,14 +186,15 @@ static bool get_cell(const struct gol *self, enum world_type wtype, int i, int j
     */
 
     fix_coords(self, &i, &j);
-    //return *(self->worlds[wtype] + j + i * self->size_y);
-    return self->worlds[wtype][j + i * self->size_y];
+    return CELL(self, wtype, i, j);
 }
 
 static void set_cell(struct gol *self, enum world_type wtype, int i, int j, bool value)
 {
+    /*
+    * Setea la celda con el valor del parámetro value
+    */
 
     fix_coords(self, &i, &j);
-    //*(self->worlds[wtype] + j + i * self->size_y) = value;
-    self->worlds[wtype][j + i * self->size_y] = value;
+    CELL(self, wtype, i, j) = value;
 }

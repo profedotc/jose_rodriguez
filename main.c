@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include "gol.h"
 
+/*
+ * Macros para definir dinámicamente el tamaño de
+ * los mundos
+ */
+#define TAM_X 8
+#define TAM_Y 16
+
 int main()
 {
     int i = 0;
