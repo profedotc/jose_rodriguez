@@ -4,6 +4,13 @@
 
 enum world_type {CURRENT_WORLD, NEXT_WORLD};
 
+struct gol {
+	int size_x;
+	int size_y;
+	bool *mem;
+	bool *worlds[NUM_WORLDS];
+};
+
 /*
  * Macro funcional para acceder a las celdas
  * Se define aquí porque no queremos que el usuario de mi librería disponga de ella
