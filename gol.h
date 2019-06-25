@@ -13,7 +13,7 @@ struct gol {
 	bool *worlds[NUM_WORLDS];
 };
 
-bool gol_alloc(struct gol *self, int x, int y);	// Constructor. Tengo que pasar el tamaño de los mundos, para poder reservar memoria dinámicamente
+struct gol * gol_alloc(int x, int y);	// Constructor. Tengo que pasar el tamaño de los mundos, para poder reservar memoria dinámicamente
 void gol_init(struct gol *self);	// Inicializa el mundo.
 void gol_print(struct gol *self);	// Imprime el mundo
 void gol_step(struct gol *self);	// Itera el siguiente paso
