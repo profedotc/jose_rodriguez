@@ -6,12 +6,7 @@
 #define NUM_WORLDS 2
 #define ITERATIONS 500
 
-struct gol {
-	int size_x;
-	int size_y;
-	bool *mem;
-	bool *worlds[NUM_WORLDS];
-};
+struct gol; // Declaración adelantada (forward declaration)
 
 struct gol * gol_alloc(int x, int y);	// Constructor. Tengo que pasar el tamaño de los mundos, para poder reservar memoria dinámicamente
 void gol_init(struct gol *self);	// Inicializa el mundo.
